@@ -1,0 +1,81 @@
+---
+title: "When do shooting percentages become reliable?"
+author: "Chris Gauthier"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load libraries
+library(tidyverse)
+
+# Load data
+shots <- read_csv("NBA_2024_Shots.csv")
+
+# Drop unnecessary columns
+shots2 <- shots %>%
+  select(-SEASON_1, -SEASON_2, -TEAM_ID, -PLAYER_ID, -GAME_ID, -HOME_TEAM, 
+         -AWAY_TEAM, -EVENT_TYPE, -ZONE_NAME, -ZONE_ABB, -LOC_X, -LOC_Y)
+
+# Format dates
+shots3 <- shots2 %>%
+  mutate(GAME_DATE = as.Date(shots2$GAME_DATE, format="%m-%d-%Y"))
+
+# Number of shots
+fg <- shots3 %>%
+  group_by(PLAYER_NAME) %>% mutate(shot_num = row_number())
+
+fg2 <- fg %>%
+  group_by(shot_num) %>%
+  summarize(attempts = n(), makes = sum(SHOT_MADE))
+
+# Player shot count elbow chart
+player_elbow <- ggplot(data=fg2, aes(x=shot_num, y=attempts)) +
+  geom_point() +
+  xlab("Number of Shots") +
+  ylab("Number of Players")
+```
+
+## Introduction
+
+In this document I will perform an analysis where I identify at what number of shot attempts do shooting percentages start to become reliable.
+
+This will include an analysis of R-Squared values comparing the collective players' n-attempt samples with their season-long percentages.
+
+I will analyze 
+
+- FG%
+- 2PFG%
+- 3PFG%
+- eFG%
+- TS%
+
+## Methodology
+
+*Explination on random sampling of n-attempts as opposed to first n-attempts*
+
+I chose the arbitrary value of 500 shot attempts as a cut off for the population of players I examined, which brought me to the 174 highest-volume shooters over the course of the 2023-2024 NBA season.
+
+## Deciding on a qualifying # of shot attempts
+
+```{r shooting-sample-reliability, echo=FALSE}
+player_elbow
+```
+
+## Next steps
+
+I performed this analysis with a timeline of 1.5-2 weeks and limited bandwidth. If I had more time, there are a number of ways I think I could have taken this analysis.
+
+### Ranges/confidence intervals
+
+*Explination*
+
+### Experiment with other measures of accuracy/correlation
+
+*Explination*
+
+### Clean code practices
+
+*Explination*
