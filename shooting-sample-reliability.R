@@ -45,7 +45,7 @@ for(i in seq(from=1, to=100, by=1)){
   # Create n-shot random samples for each player, calculate %s
   random_n_fga <- data.frame()
   
-  for(i in seq(from=10, to=1000, by=10)){
+  for(i in seq(from=10, to=500, by=10)){
     random_shots <- shots4 %>% 
       group_by(PLAYER_NAME) %>% 
       slice_sample(n=i) %>% 
@@ -63,7 +63,7 @@ for(i in seq(from=1, to=100, by=1)){
   # Get R-Squared values by n-shots
   n_shots_r_squared <- data.frame()
   
-  for(i in seq(from=10, to=1000, by=10)){
+  for(i in seq(from=10, to=500, by=10)){
     subset_for_r_squared <- random_n_fga %>% 
       filter(n_shots == i)
     
@@ -88,7 +88,11 @@ n_shot_samples <- all_samples_r_squared %>%
             avg_diff = mean(diff))
 
 # Graph R squareds
-ggplot(n_shot_samples, aes(x=i, y=avg_r_squared)) +
-  geom_line()
+ggplot(n_shot_samples, aes(x=i, y=avg_rmse)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long FG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+  
 
 # To do: Create R Shiny app where you can change metrics, sample sizes, etc.
