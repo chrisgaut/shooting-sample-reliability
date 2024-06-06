@@ -1,2 +1,2 @@
 # shooting-sample-reliability
-An analysis on when shooting samples start to become reliable.
+[WIP] An analysis on when shooting samples start to become reliable.
