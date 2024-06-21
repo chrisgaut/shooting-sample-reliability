@@ -1,11 +1,9 @@
 # Shooting sample reliability
 
+########## Analysis Prep ########## 
 # Load libraries
 library(tidyverse)
 library(Metrics)
-
-# R-Squared Function
-rsq <- function (x, y) cor(x, y) ^ 2
 
 # Load data
 shots <- read_csv("NBA_2024_Shots.csv")
@@ -15,21 +13,48 @@ shots_cleaned <- shots %>%
   select(-SEASON_1, -SEASON_2, -TEAM_ID, -PLAYER_ID, -GAME_ID, -HOME_TEAM, 
          -AWAY_TEAM, -EVENT_TYPE, -ZONE_NAME, -ZONE_ABB, -LOC_X, -LOC_Y)
 
+##############################
 
 
+########## Qualifying Shots Elbow Chart Function ########## 
+qual_shot_elbow <- function(data) { 
+  ########################
+  ## qual_shot_elbow: Charts the number of players that have taken n-shot attempts
+  ## Args:
+  ##.      data: NBA Shots data frame
+  ########################
+  shot_attempts <- data %>%
+    group_by(PLAYER_NAME) %>% 
+    mutate(shot_num = row_number())
+  
+  count_by_shot_attempts <- shot_attempts %>%
+    group_by(shot_num) %>%
+    mutate(count_players = n()) %>%
+    select(shot_num, count_players) %>%
+    unique()
+  
+  qual_shot_elbow_chart <- ggplot(count_by_shot_attempts, aes(x=shot_num, y=count_players)) +
+    geom_line() +
+    xlab('# of shots') +
+    ylab('# of players')
+  
+  return(qual_shot_elbow_chart)
+}
 
-########## Function Testing Parameters ########## 
-data <- shots_cleaned
-shot_min <- 1000
-n_samples <- 100
-
-results <- random_shot_samples(data, shot_min, n_samples)
+##############################
 
 
-
-
-########## Build Simulation Function ########## 
+########## Random Sampling + Smoothing Function ########## 
 random_shot_samples <- function(data, shot_min, n_samples) { 
+  ########################
+  ## random_shot_samples: Takes i-iterations of 10-interval random shot samples, based on q-qualifying number of shots.
+  ## Args:
+  ##.      data: NBA Shots data frame
+  ##       shot_min: Qualifying number of shots to filter players on
+  ##       n_samples: Number of samples taken for smoothing
+  ########################
+  
+  
   # Get list of players with at least n shot attempts
   qualifying_players <- data %>%
     group_by(PLAYER_NAME) %>% 
@@ -46,9 +71,9 @@ random_shot_samples <- function(data, shot_min, n_samples) {
     group_by(PLAYER_NAME) %>% 
     summarize(season_pct = sum(SHOT_MADE)/n())
   
-  # Run n random samples for correlation smoothing
+  # Run i random samples for correlation smoothing
   all_samples_metrics <- data.frame()
-  for(i in seq(from=1, to=100, by=1)){
+  for(i in seq(from=1, to=n_samples, by=1)){
     # Create n-shot random samples for each player, calculate %s
     random_n_shots <- data.frame()
     for(i in seq(from=10, to=shot_min, by=10)){
@@ -71,13 +96,11 @@ random_shot_samples <- function(data, shot_min, n_samples) {
       subset_for_metrics <- random_n_shots %>% 
         filter(n_shots == i)
       
-      r_squared = rsq(subset_for_metrics$sample_pct, subset_for_metrics$season_pct)
-      
       rmse = rmse(subset_for_metrics$sample_pct, subset_for_metrics$season_pct)
       
       diff = abs(subset_for_metrics$sample_pct - subset_for_metrics$season_pct)
       
-      app_df = data.frame(i, r_squared, rmse, diff)
+      app_df = data.frame(i, rmse, diff)
       
       n_shots_accuracy <- rbind(n_shots_accuracy, app_df)
     }
@@ -88,29 +111,69 @@ random_shot_samples <- function(data, shot_min, n_samples) {
   # Average accuracy metrics across all random samples
   n_shot_samples <- all_samples_metrics %>%
     group_by(i) %>%
-    summarize(avg_r_squared = mean(r_squared),
-              avg_rmse = mean(rmse),
+    summarize(avg_rmse = mean(rmse),
               avg_diff = mean(diff))
   
   return(n_shot_samples)
 }
 
+##############################
 
 
+########## Analysis ########## 
+## FG%
+fg_pct <- shots_cleaned
 
-########## Graphing ########## 
-# Graph RMSE
-ggplot(results, aes(x=i, y=avg_rmse)) +
+qual_shots_elbow_fg_pct <- qual_shot_elbow(fg_pct)
+
+shot_min_fg_pct <- 500
+n_samples_fg_pct <- 100
+
+results_fg_pct <- random_shot_samples(fg_pct, shot_min_fg_pct, n_samples_fg_pct)
+
+## 2PFG%
+fg_pct_2s <- shots_cleaned %>% filter(SHOT_TYPE == '2PT Field Goal')
+
+qual_shots_elbow_fg_pct_2s <- qual_shot_elbow(fg_pct_2s)
+
+shot_min_fg_pct_2s <- 400
+n_samples_fg_pct_2s <- 100
+
+results_fg_pct_2s <- random_shot_samples(fg_pct_2s, shot_min_fg_pct_2s, n_samples_fg_pct_2s)
+
+## 3PFG%
+fg_pct_3s <- shots_cleaned %>% filter(SHOT_TYPE == '3PT Field Goal')
+
+qual_shots_elbow_fg_pct_3s <- qual_shot_elbow(fg_pct_3s)
+
+shot_min_fg_pct_3s <- 250
+n_samples_fg_pct_3s <- 100
+
+results_fg_pct_3s <- random_shot_samples(fg_pct_3s, shot_min_fg_pct_3s, n_samples_fg_pct_3s)
+
+##############################
+
+
+########## Graph Results ########## 
+# Graph RMSE for FG%
+ggplot(results_fg_pct, aes(x=i, y=avg_rmse)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
-# Graph Difference in FG%
-ggplot(n_shot_samples, aes(x=i, y=avg_diff)) +
+# Graph RMSE for 2PFG%
+ggplot(results_fg_pct_2s, aes(x=i, y=avg_rmse)) +
   geom_line() +
   xlab('# of shots') +
-  ylab('Abs. Difference in FG%') +
+  ylab('RMSE (Sample ~ Season-Long 2PFG%)') +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
-# To do: 2PFG%, 3PFG%, eFG%
+# Graph RMSE for 3PFG%
+ggplot(results_fg_pct_3s, aes(x=i, y=avg_rmse)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long 3PFG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+
+##############################
