@@ -8,11 +8,6 @@ library(Metrics)
 # Load data
 shots <- read_csv("NBA_2024_Shots.csv")
 
-# Drop unnecessary columns
-shots_cleaned <- shots %>%
-  select(-SEASON_1, -SEASON_2, -TEAM_ID, -PLAYER_ID, -GAME_ID, -HOME_TEAM, 
-         -AWAY_TEAM, -EVENT_TYPE, -ZONE_NAME, -ZONE_ABB, -LOC_X, -LOC_Y)
-
 ##############################
 
 
@@ -122,7 +117,7 @@ random_shot_samples <- function(data, shot_min, n_samples) {
 
 ########## Analysis ########## 
 ## FG%
-fg_pct <- shots_cleaned
+fg_pct <- shots
 
 qual_shots_elbow_fg_pct <- qual_shot_elbow(fg_pct)
 
@@ -131,23 +126,29 @@ n_samples_fg_pct <- 100
 
 results_fg_pct <- random_shot_samples(fg_pct, shot_min_fg_pct, n_samples_fg_pct)
 
+## FG% - 2
+shot_min_fg_pct2 <- 250
+n_samples_fg_pct2 <- 200
+
+results_fg_pct2 <- random_shot_samples(fg_pct, shot_min_fg_pct2, n_samples_fg_pct2)
+
 ## 2PFG%
-fg_pct_2s <- shots_cleaned %>% filter(SHOT_TYPE == '2PT Field Goal')
+fg_pct_2s <- shots %>% filter(SHOT_TYPE == '2PT Field Goal')
 
 qual_shots_elbow_fg_pct_2s <- qual_shot_elbow(fg_pct_2s)
 
-shot_min_fg_pct_2s <- 400
-n_samples_fg_pct_2s <- 100
+shot_min_fg_pct_2s <- 250
+n_samples_fg_pct_2s <- 200
 
 results_fg_pct_2s <- random_shot_samples(fg_pct_2s, shot_min_fg_pct_2s, n_samples_fg_pct_2s)
 
 ## 3PFG%
-fg_pct_3s <- shots_cleaned %>% filter(SHOT_TYPE == '3PT Field Goal')
+fg_pct_3s <- shots %>% filter(SHOT_TYPE == '3PT Field Goal')
 
 qual_shots_elbow_fg_pct_3s <- qual_shot_elbow(fg_pct_3s)
 
 shot_min_fg_pct_3s <- 250
-n_samples_fg_pct_3s <- 100
+n_samples_fg_pct_3s <- 200
 
 results_fg_pct_3s <- random_shot_samples(fg_pct_3s, shot_min_fg_pct_3s, n_samples_fg_pct_3s)
 
@@ -156,24 +157,37 @@ results_fg_pct_3s <- random_shot_samples(fg_pct_3s, shot_min_fg_pct_3s, n_sample
 
 ########## Graph Results ########## 
 # Graph RMSE for FG%
-ggplot(results_fg_pct, aes(x=i, y=avg_rmse)) +
+elbow_fg <- ggplot(results_fg_pct, aes(x=i, y=avg_rmse)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long FG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+
+# Graph RMSE for FG% - 2
+elbow_fg2 <- ggplot(results_fg_pct2, aes(x=i, y=avg_rmse)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
 # Graph RMSE for 2PFG%
-ggplot(results_fg_pct_2s, aes(x=i, y=avg_rmse)) +
+elbow_2s <- ggplot(results_fg_pct_2s, aes(x=i, y=avg_rmse)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long 2PFG%)') +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
 # Graph RMSE for 3PFG%
-ggplot(results_fg_pct_3s, aes(x=i, y=avg_rmse)) +
+elbow_3s <- ggplot(results_fg_pct_3s, aes(x=i, y=avg_rmse)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long 3PFG%)') +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
 ##############################
+
+# To Do
+# 1. Create eFG% calculation
+# 2. Divide data by zones
+# 3. Combine data frames to draw graphs on top of each other
+# 4. Begin analysis, working on markdown
