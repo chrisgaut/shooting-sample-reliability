@@ -152,6 +152,46 @@ n_samples_fg_pct_3s <- 200
 
 results_fg_pct_3s <- random_shot_samples(fg_pct_3s, shot_min_fg_pct_3s, n_samples_fg_pct_3s)
 
+## Less Than 8 ft.
+fg_pct_8_ft <- shots %>% filter(ZONE_RANGE == 'Less Than 8 ft.')
+
+qual_shots_elbow_fg_pct_8_ft <- qual_shot_elbow(fg_pct_8_ft)
+
+shot_min_fg_pct_8_ft <- 250
+n_samples_fg_pct_8_ft <- 200
+
+results_fg_pct_8_ft <- random_shot_samples(fg_pct_8_ft, shot_min_fg_pct_8_ft, n_samples_fg_pct_8_ft)
+
+## 8-16 ft.
+fg_pct_8_16_ft <- shots %>% filter(ZONE_RANGE == '8-16 ft.')
+
+qual_shots_elbow_fg_pct_8_16_ft <- qual_shot_elbow(fg_pct_8_16_ft)
+
+shot_min_fg_pct_8_16_ft <- 250
+n_samples_fg_pct_8_16_ft <- 200
+
+results_fg_pct_8_16_ft <- random_shot_samples(fg_pct_8_16_ft, shot_min_fg_pct_8_16_ft, n_samples_fg_pct_8_16_ft)
+
+## 16-24 ft.
+fg_pct_16_24_ft <- shots %>% filter(ZONE_RANGE == '16-24 ft.')
+
+qual_shots_elbow_fg_pct_16_24_ft <- qual_shot_elbow(fg_pct_16_24_ft)
+
+shot_min_fg_pct_16_24_ft <- 250
+n_samples_fg_pct_16_24_ft <- 500
+
+results_fg_pct_16_24_ft <- random_shot_samples(fg_pct_16_24_ft, shot_min_fg_pct_16_24_ft, n_samples_fg_pct_16_24_ft)
+
+## 16-24 ft.
+fg_pct_24_ft <- shots %>% filter(ZONE_RANGE == '24+ ft.')
+
+qual_shots_elbow_fg_pct_24_ft <- qual_shot_elbow(fg_pct_24_ft)
+
+shot_min_fg_pct_24_ft <- 250
+n_samples_fg_pct_24_ft <- 200
+
+results_fg_pct_24_ft <- random_shot_samples(fg_pct_24_ft, shot_min_fg_pct_24_ft, n_samples_fg_pct_24_ft)
+
 ##############################
 
 
@@ -184,10 +224,36 @@ elbow_3s <- ggplot(results_fg_pct_3s, aes(x=i, y=avg_rmse)) +
   ylab('RMSE (Sample ~ Season-Long 3PFG%)') +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
+# Graph RMSE for <8ft%
+elbow_8_ft <- ggplot(results_fg_pct_8_ft, aes(x=i, y=avg_rmse)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long <8ftFG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+
+# Graph RMSE for 8-16ft%
+elbow_8_16_ft <- ggplot(results_fg_pct_8_16_ft, aes(x=i, y=avg_rmse)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long 8-16ftFG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+
+# Graph RMSE for 8-16ft%
+elbow_16_24_ft <- ggplot(results_fg_pct_16_24_ft, aes(x=i, y=avg_rmse)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long 16-24ftFG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+
+# Graph RMSE for >24ft%
+elbow_24_ft <- ggplot(results_fg_pct_24_ft, aes(x=i, y=avg_rmse)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long >24ftFG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+
 ##############################
 
 # To Do
-# 1. Create eFG% calculation
-# 2. Divide data by zones
 # 3. Combine data frames to draw graphs on top of each other
 # 4. Begin analysis, working on markdown
