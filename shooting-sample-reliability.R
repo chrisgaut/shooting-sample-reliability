@@ -40,7 +40,7 @@ qual_shot_elbow <- function(data) {
 
 
 ########## Random Sampling + Smoothing Function ########## 
-random_shot_samples <- function(data, shot_min, n_samples) { 
+random_shot_samples <- function(data, shot_min, n_samples, sample_name) { 
   ########################
   ## random_shot_samples: Takes i-iterations of 10-interval random shot samples, based on q-qualifying number of shots.
   ## Args:
@@ -109,6 +109,8 @@ random_shot_samples <- function(data, shot_min, n_samples) {
     summarize(avg_rmse = mean(rmse),
               avg_diff = mean(diff))
   
+  names(n_shot_samples)[names(n_shot_samples) == 'avg_rmse'] <- paste0('avg_rmse_', sample_name)
+  
   return(n_shot_samples)
 }
 
@@ -122,9 +124,9 @@ fg_pct <- shots
 qual_shots_elbow_fg_pct <- qual_shot_elbow(fg_pct)
 
 shot_min_fg_pct <- 500
-n_samples_fg_pct <- 100
+n_samples_fg_pct <- 1000
 
-results_fg_pct <- random_shot_samples(fg_pct, shot_min_fg_pct, n_samples_fg_pct)
+results_fg_pct <- random_shot_samples(fg_pct, shot_min_fg_pct, n_samples_fg_pct, 'fg')
 
 ## FG% - 2
 shot_min_fg_pct2 <- 250
@@ -158,7 +160,7 @@ fg_pct_8_ft <- shots %>% filter(ZONE_RANGE == 'Less Than 8 ft.')
 qual_shots_elbow_fg_pct_8_ft <- qual_shot_elbow(fg_pct_8_ft)
 
 shot_min_fg_pct_8_ft <- 250
-n_samples_fg_pct_8_ft <- 200
+n_samples_fg_pct_8_ft <- 1000
 
 results_fg_pct_8_ft <- random_shot_samples(fg_pct_8_ft, shot_min_fg_pct_8_ft, n_samples_fg_pct_8_ft)
 
@@ -168,7 +170,7 @@ fg_pct_8_16_ft <- shots %>% filter(ZONE_RANGE == '8-16 ft.')
 qual_shots_elbow_fg_pct_8_16_ft <- qual_shot_elbow(fg_pct_8_16_ft)
 
 shot_min_fg_pct_8_16_ft <- 250
-n_samples_fg_pct_8_16_ft <- 200
+n_samples_fg_pct_8_16_ft <- 1000
 
 results_fg_pct_8_16_ft <- random_shot_samples(fg_pct_8_16_ft, shot_min_fg_pct_8_16_ft, n_samples_fg_pct_8_16_ft)
 
@@ -178,17 +180,17 @@ fg_pct_16_24_ft <- shots %>% filter(ZONE_RANGE == '16-24 ft.')
 qual_shots_elbow_fg_pct_16_24_ft <- qual_shot_elbow(fg_pct_16_24_ft)
 
 shot_min_fg_pct_16_24_ft <- 250
-n_samples_fg_pct_16_24_ft <- 500
+n_samples_fg_pct_16_24_ft <- 1000
 
 results_fg_pct_16_24_ft <- random_shot_samples(fg_pct_16_24_ft, shot_min_fg_pct_16_24_ft, n_samples_fg_pct_16_24_ft)
 
-## 16-24 ft.
+## >24 ft.
 fg_pct_24_ft <- shots %>% filter(ZONE_RANGE == '24+ ft.')
 
 qual_shots_elbow_fg_pct_24_ft <- qual_shot_elbow(fg_pct_24_ft)
 
 shot_min_fg_pct_24_ft <- 250
-n_samples_fg_pct_24_ft <- 200
+n_samples_fg_pct_24_ft <- 1000
 
 results_fg_pct_24_ft <- random_shot_samples(fg_pct_24_ft, shot_min_fg_pct_24_ft, n_samples_fg_pct_24_ft)
 
@@ -197,7 +199,7 @@ results_fg_pct_24_ft <- random_shot_samples(fg_pct_24_ft, shot_min_fg_pct_24_ft,
 
 ########## Graph Results ########## 
 # Graph RMSE for FG%
-elbow_fg <- ggplot(results_fg_pct, aes(x=i, y=avg_rmse)) +
+elbow_fg <- ggplot(results_fg_pct, aes(x=i, y=avg_rmse_fg)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
@@ -256,4 +258,5 @@ elbow_24_ft <- ggplot(results_fg_pct_24_ft, aes(x=i, y=avg_rmse)) +
 
 # To Do
 # 3. Combine data frames to draw graphs on top of each other
+#     - Add 'suffix' parameter to sampling function
 # 4. Begin analysis, working on markdown
