@@ -6,6 +6,7 @@ library(tidyverse)
 library(Metrics)
 
 # Load data
+#setwd('/Users/chrisgauthier/ChrisDocs/shooting-sample-reliability')
 shots <- read_csv("NBA_2024_Shots.csv")
 
 ##############################
@@ -107,9 +108,10 @@ random_shot_samples <- function(data, shot_min, n_samples, sample_name) {
   n_shot_samples <- all_samples_metrics %>%
     group_by(i) %>%
     summarize(avg_rmse = mean(rmse),
-              avg_diff = mean(diff))
+              avg_diff = mean(diff),
+              version = sample_name)
   
-  names(n_shot_samples)[names(n_shot_samples) == 'avg_rmse'] <- paste0('avg_rmse_', sample_name)
+  # names(n_shot_samples)[names(n_shot_samples) == 'avg_rmse'] <- paste0('avg_rmse_', sample_name)
   
   return(n_shot_samples)
 }
@@ -117,96 +119,105 @@ random_shot_samples <- function(data, shot_min, n_samples, sample_name) {
 ##############################
 
 
-########## Analysis ########## 
+########## Analysis - Basic FG%s ########## 
 ## FG%
 fg_pct <- shots
 
 qual_shots_elbow_fg_pct <- qual_shot_elbow(fg_pct)
 
-shot_min_fg_pct <- 500
+shot_min_fg_pct <- 300
 n_samples_fg_pct <- 1000
 
-results_fg_pct <- random_shot_samples(fg_pct, shot_min_fg_pct, n_samples_fg_pct, 'fg')
-
-## FG% - 2
-shot_min_fg_pct2 <- 250
-n_samples_fg_pct2 <- 200
-
-results_fg_pct2 <- random_shot_samples(fg_pct, shot_min_fg_pct2, n_samples_fg_pct2)
+results_fg_pct <- random_shot_samples(fg_pct, shot_min_fg_pct, n_samples_fg_pct, 'FG%')
 
 ## 2PFG%
 fg_pct_2s <- shots %>% filter(SHOT_TYPE == '2PT Field Goal')
 
 qual_shots_elbow_fg_pct_2s <- qual_shot_elbow(fg_pct_2s)
 
-shot_min_fg_pct_2s <- 250
-n_samples_fg_pct_2s <- 200
+shot_min_fg_pct_2s <- 300
+n_samples_fg_pct_2s <- 1000
 
-results_fg_pct_2s <- random_shot_samples(fg_pct_2s, shot_min_fg_pct_2s, n_samples_fg_pct_2s)
+results_fg_pct_2s <- random_shot_samples(fg_pct_2s, shot_min_fg_pct_2s, n_samples_fg_pct_2s, '2PFG%')
 
 ## 3PFG%
 fg_pct_3s <- shots %>% filter(SHOT_TYPE == '3PT Field Goal')
 
 qual_shots_elbow_fg_pct_3s <- qual_shot_elbow(fg_pct_3s)
 
-shot_min_fg_pct_3s <- 250
-n_samples_fg_pct_3s <- 200
+shot_min_fg_pct_3s <- 300
+n_samples_fg_pct_3s <- 1000
 
-results_fg_pct_3s <- random_shot_samples(fg_pct_3s, shot_min_fg_pct_3s, n_samples_fg_pct_3s)
+results_fg_pct_3s <- random_shot_samples(fg_pct_3s, shot_min_fg_pct_3s, n_samples_fg_pct_3s, '3PFG%')
 
+## Combine
+pcts_data <- rbind(results_fg_pct, results_fg_pct_2s, results_fg_pct_3s)
+
+pcts_graph <- ggplot(pcts_data, aes(x=i, y=avg_rmse, color=version)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long FG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+
+##############################
+
+
+########## Analysis - Ft. Distance FG%s ########## 
 ## Less Than 8 ft.
 fg_pct_8_ft <- shots %>% filter(ZONE_RANGE == 'Less Than 8 ft.')
 
 qual_shots_elbow_fg_pct_8_ft <- qual_shot_elbow(fg_pct_8_ft)
 
-shot_min_fg_pct_8_ft <- 250
+shot_min_fg_pct_8_ft <- 300
 n_samples_fg_pct_8_ft <- 1000
 
-results_fg_pct_8_ft <- random_shot_samples(fg_pct_8_ft, shot_min_fg_pct_8_ft, n_samples_fg_pct_8_ft)
+results_fg_pct_8_ft <- random_shot_samples(fg_pct_8_ft, shot_min_fg_pct_8_ft, n_samples_fg_pct_8_ft, '<8 Ft. FG%')
 
 ## 8-16 ft.
 fg_pct_8_16_ft <- shots %>% filter(ZONE_RANGE == '8-16 ft.')
 
 qual_shots_elbow_fg_pct_8_16_ft <- qual_shot_elbow(fg_pct_8_16_ft)
 
-shot_min_fg_pct_8_16_ft <- 250
+shot_min_fg_pct_8_16_ft <- 300
 n_samples_fg_pct_8_16_ft <- 1000
 
-results_fg_pct_8_16_ft <- random_shot_samples(fg_pct_8_16_ft, shot_min_fg_pct_8_16_ft, n_samples_fg_pct_8_16_ft)
+results_fg_pct_8_16_ft <- random_shot_samples(fg_pct_8_16_ft, shot_min_fg_pct_8_16_ft, n_samples_fg_pct_8_16_ft, '8-16 Ft. FG%')
 
 ## 16-24 ft.
 fg_pct_16_24_ft <- shots %>% filter(ZONE_RANGE == '16-24 ft.')
 
 qual_shots_elbow_fg_pct_16_24_ft <- qual_shot_elbow(fg_pct_16_24_ft)
 
-shot_min_fg_pct_16_24_ft <- 250
+shot_min_fg_pct_16_24_ft <- 300
 n_samples_fg_pct_16_24_ft <- 1000
 
-results_fg_pct_16_24_ft <- random_shot_samples(fg_pct_16_24_ft, shot_min_fg_pct_16_24_ft, n_samples_fg_pct_16_24_ft)
+results_fg_pct_16_24_ft <- random_shot_samples(fg_pct_16_24_ft, shot_min_fg_pct_16_24_ft, n_samples_fg_pct_16_24_ft, '16-24 Ft. FG%')
 
 ## >24 ft.
 fg_pct_24_ft <- shots %>% filter(ZONE_RANGE == '24+ ft.')
 
 qual_shots_elbow_fg_pct_24_ft <- qual_shot_elbow(fg_pct_24_ft)
 
-shot_min_fg_pct_24_ft <- 250
+shot_min_fg_pct_24_ft <- 300
 n_samples_fg_pct_24_ft <- 1000
 
-results_fg_pct_24_ft <- random_shot_samples(fg_pct_24_ft, shot_min_fg_pct_24_ft, n_samples_fg_pct_24_ft)
+results_fg_pct_24_ft <- random_shot_samples(fg_pct_24_ft, shot_min_fg_pct_24_ft, n_samples_fg_pct_24_ft, '>24 Ft. FG%')
+
+## Combine
+dist_data <- rbind(results_fg_pct_8_ft, results_fg_pct_8_16_ft, results_fg_pct_16_24_ft, results_fg_pct_24_ft)
+
+dists_graph <- ggplot(dist_data, aes(x=i, y=avg_rmse, color=version)) +
+  geom_line() +
+  xlab('# of shots') +
+  ylab('RMSE (Sample ~ Season-Long FG%)') +
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
 ##############################
 
 
 ########## Graph Results ########## 
 # Graph RMSE for FG%
-elbow_fg <- ggplot(results_fg_pct, aes(x=i, y=avg_rmse_fg)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long FG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-# Graph RMSE for FG% - 2
-elbow_fg2 <- ggplot(results_fg_pct2, aes(x=i, y=avg_rmse)) +
+elbow_fg <- ggplot(results_fg_pct, aes(x=i, y=avg_rmse)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
