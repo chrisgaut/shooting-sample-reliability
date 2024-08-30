@@ -6,7 +6,6 @@ library(tidyverse)
 library(Metrics)
 
 # Load data
-#setwd('/Users/chrisgauthier/ChrisDocs/shooting-sample-reliability')
 shots <- read_csv("NBA_2024_Shots.csv")
 
 ##############################
@@ -157,7 +156,8 @@ pcts_graph <- ggplot(pcts_data, aes(x=i, y=avg_rmse, color=version)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?') +
+  geom_vline(xintercept=75, color = 'red', linetype='dashed')
 
 ##############################
 
@@ -210,7 +210,8 @@ dists_graph <- ggplot(dist_data, aes(x=i, y=avg_rmse, color=version)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
+  ggtitle('Elbow Jumper: When do shooting samples start to plateu?') +
+  geom_vline(xintercept=75, color = 'red', linetype='dashed')
 
 ##############################
 
@@ -266,8 +267,3 @@ elbow_24_ft <- ggplot(results_fg_pct_24_ft, aes(x=i, y=avg_rmse)) +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
 
 ##############################
-
-# To Do
-# 3. Combine data frames to draw graphs on top of each other
-#     - Add 'suffix' parameter to sampling function
-# 4. Begin analysis, working on markdown
