@@ -47,6 +47,7 @@ random_shot_samples <- function(data, shot_min, n_samples, sample_name) {
   ##.      data: NBA Shots data frame
   ##       shot_min: Qualifying number of shots to filter players on
   ##       n_samples: Number of samples taken for smoothing
+  ##       sample_name: Distinguish between different metrics being analyzed
   ########################
   
   
@@ -108,7 +109,7 @@ random_shot_samples <- function(data, shot_min, n_samples, sample_name) {
     group_by(i) %>%
     summarize(avg_rmse = mean(rmse),
               avg_diff = mean(diff),
-              version = sample_name)
+              `FG%` = sample_name)
   
   # names(n_shot_samples)[names(n_shot_samples) == 'avg_rmse'] <- paste0('avg_rmse_', sample_name)
   
@@ -152,12 +153,14 @@ results_fg_pct_3s <- random_shot_samples(fg_pct_3s, shot_min_fg_pct_3s, n_sample
 ## Combine
 pcts_data <- rbind(results_fg_pct, results_fg_pct_2s, results_fg_pct_3s)
 
-pcts_graph <- ggplot(pcts_data, aes(x=i, y=avg_rmse, color=version)) +
+pcts_graph <- ggplot(pcts_data, aes(x=i, y=avg_rmse, color=`FG%`)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
   ggtitle('Elbow Jumper: When do shooting samples start to plateu?') +
-  geom_vline(xintercept=75, color = 'red', linetype='dashed')
+  geom_vline(xintercept=75, color = 'red', linetype='dashed') +
+  geom_hline(yintercept=0.05, color = 'red', linetype='dashed') +
+  geom_hline(yintercept=0.055, color = 'red', linetype='dashed')
 
 ##############################
 
@@ -188,11 +191,6 @@ fg_pct_16_24_ft <- shots %>% filter(ZONE_RANGE == '16-24 ft.')
 
 qual_shots_elbow_fg_pct_16_24_ft <- qual_shot_elbow(fg_pct_16_24_ft)
 
-shot_min_fg_pct_16_24_ft <- 300
-n_samples_fg_pct_16_24_ft <- 1000
-
-results_fg_pct_16_24_ft <- random_shot_samples(fg_pct_16_24_ft, shot_min_fg_pct_16_24_ft, n_samples_fg_pct_16_24_ft, '16-24 Ft. FG%')
-
 ## >24 ft.
 fg_pct_24_ft <- shots %>% filter(ZONE_RANGE == '24+ ft.')
 
@@ -206,7 +204,7 @@ results_fg_pct_24_ft <- random_shot_samples(fg_pct_24_ft, shot_min_fg_pct_24_ft,
 ## Combine
 dist_data <- rbind(results_fg_pct_8_ft, results_fg_pct_8_16_ft, results_fg_pct_16_24_ft, results_fg_pct_24_ft)
 
-dists_graph <- ggplot(dist_data, aes(x=i, y=avg_rmse, color=version)) +
+dists_graph <- ggplot(dist_data, aes(x=i, y=avg_rmse, color=`FG%`)) +
   geom_line() +
   xlab('# of shots') +
   ylab('RMSE (Sample ~ Season-Long FG%)') +
@@ -216,54 +214,3 @@ dists_graph <- ggplot(dist_data, aes(x=i, y=avg_rmse, color=version)) +
 ##############################
 
 
-########## Graph Results ########## 
-# Graph RMSE for FG%
-elbow_fg <- ggplot(results_fg_pct, aes(x=i, y=avg_rmse)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long FG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-# Graph RMSE for 2PFG%
-elbow_2s <- ggplot(results_fg_pct_2s, aes(x=i, y=avg_rmse)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long 2PFG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-# Graph RMSE for 3PFG%
-elbow_3s <- ggplot(results_fg_pct_3s, aes(x=i, y=avg_rmse)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long 3PFG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-# Graph RMSE for <8ft%
-elbow_8_ft <- ggplot(results_fg_pct_8_ft, aes(x=i, y=avg_rmse)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long <8ftFG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-# Graph RMSE for 8-16ft%
-elbow_8_16_ft <- ggplot(results_fg_pct_8_16_ft, aes(x=i, y=avg_rmse)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long 8-16ftFG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-# Graph RMSE for 8-16ft%
-elbow_16_24_ft <- ggplot(results_fg_pct_16_24_ft, aes(x=i, y=avg_rmse)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long 16-24ftFG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-# Graph RMSE for >24ft%
-elbow_24_ft <- ggplot(results_fg_pct_24_ft, aes(x=i, y=avg_rmse)) +
-  geom_line() +
-  xlab('# of shots') +
-  ylab('RMSE (Sample ~ Season-Long >24ftFG%)') +
-  ggtitle('Elbow Jumper: When do shooting samples start to plateu?')
-
-##############################
